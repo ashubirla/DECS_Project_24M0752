@@ -2,7 +2,7 @@
 #include <string>
 #include <map>
 #include <mutex>
-#include <memory>
+#include <memory> 
 
 #include "mysql_connection.h"
 #include <cppconn/driver.h>
@@ -17,30 +17,36 @@ using namespace std;
 
 map<string, string> cache;
 mutex cache_mutex;
-sql::Connection *con;
 
-string parse_key(const string& path) {
-    if (path.rfind("/kv/", 0) == 0) {
-        return path.substr(4);
-    }
-    return "";
+const string DB_HOST = "tcp://127.0.0.1:3306";
+const string DB_USER = "ashu";
+const string DB_PASS = "ProjectPass@123";
+const string DB_NAME = "kv_db";
+
+sql::Connection* get_db_connection() {
+    sql::Driver *driver = get_driver_instance();
+    sql::Connection *con = driver->connect(DB_HOST, DB_USER, DB_PASS);
+    con->setSchema(DB_NAME);
+    return con;
 }
 
+
 void handle_get(const httplib::Request& req, httplib::Response& res) {
-    string key = parse_key(req.path);
-    cout << "GET: " << key << endl;
+    unique_ptr<sql::Connection> con(get_db_connection());
+
+    string key = req.path_params.at("key");
+
 
     cache_mutex.lock();
     auto it = cache.find(key);
     if (it != cache.end()) {
-        cout << "  [Cache HIT]" << endl;
+        cout<<"GOT FROM CACHE for key "<<key<<" :"<< cache[key]<<endl;
         res.set_content(it->second, "text/plain");
         cache_mutex.unlock();
         return;
     }
     cache_mutex.unlock();
-
-    cout << "  [Cache MISS] -> DB" << endl;
+    cout << "GET: " << key << endl;
     unique_ptr<sql::PreparedStatement> pstmt(
         con->prepareStatement("SELECT id_value FROM kv_store WHERE id_key = ?")
     );
@@ -60,7 +66,9 @@ void handle_get(const httplib::Request& req, httplib::Response& res) {
 }
 
 void handle_create(const httplib::Request& req, httplib::Response& res) {
-    string key = parse_key(req.path);
+    unique_ptr<sql::Connection> con(get_db_connection());
+
+    string key = req.path_params.at("key");
     string value = req.body;
     cout << "POST: " << key << endl;
 
@@ -71,19 +79,19 @@ void handle_create(const httplib::Request& req, httplib::Response& res) {
     pstmt->setString(2, value);
     pstmt->setString(3, value);
     pstmt->executeUpdate();
-    cout << "  [DB Stored]" << endl;
 
     cache_mutex.lock();
     cache[key] = value;
     cache_mutex.unlock();
-    cout << "  [Cache Stored]" << endl;
 
     res.status = 201;
     res.set_content("Created", "text/plain");
 }
 
 void handle_delete(const httplib::Request& req, httplib::Response& res) {
-    string key = parse_key(req.path);
+    unique_ptr<sql::Connection> con(get_db_connection());
+
+    string key = req.path_params.at("key");
     cout << "DELETE: " << key << endl;
 
     unique_ptr<sql::PreparedStatement> pstmt(
@@ -91,32 +99,27 @@ void handle_delete(const httplib::Request& req, httplib::Response& res) {
     );
     pstmt->setString(1, key);
     pstmt->executeUpdate();
-    cout << "  [DB Deleted]" << endl;
 
     cache_mutex.lock();
     cache.erase(key);
     cache_mutex.unlock();
-    cout << "  [Cache Deleted]" << endl;
 
     res.set_content("Deleted", "text/plain");
 }
 
 int main() {
-    sql::Driver *driver = get_driver_instance();
-    con = driver->connect("tcp://127.0.0.1:3306", "ashu", "ProjectPass@123");
-    con->setSchema("kv_db");
-    cout << "Database connection successful." << endl;
+    get_driver_instance();
+    cout << "MySQL driver loaded successfully." << endl;
 
     httplib::Server svr;
     svr.new_task_queue = [] { return new httplib::ThreadPool(12); };
 
-    svr.Get(R"(/kv/(.*))", handle_get);
-    svr.Post(R"(/kv/(.*))", handle_create);
-    svr.Delete(R"(/kv/(.*))", handle_delete);
+    svr.Get("/kv/:key", handle_get);
+    svr.Post("/kv/:key", handle_create);
+    svr.Delete("/kv/:key", handle_delete);
 
     cout << "Starting server on http://localhost:8080..." << endl;
     svr.listen("0.0.0.0", 8080);
     
-    delete con;
     return 0;
 }
