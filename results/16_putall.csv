@@ -1,0 +1,2 @@
+Workload_Type,Threads,Duration_Sec,Total_Requests,Throughput_ReqSec,Avg_Response_Time_ms
+Put_All,16,300,10169,33.90,472.2532

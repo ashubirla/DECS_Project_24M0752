@@ -1,0 +1,2 @@
+Workload_Type,Threads,Duration_Sec,Total_Requests,Throughput_ReqSec,Avg_Response_Time_ms
+Get_Popular,16,300,3911576,13038.59,1.1395
