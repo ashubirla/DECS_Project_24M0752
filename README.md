@@ -17,7 +17,7 @@ Ensure your project directory looks like this:
 
 2. Prerequisites
 
-You will need the following dependencies installed on your Linux machine (Ubuntu/Debian example):
+The project will need the following dependencies installed on Linux machine:
 
 # C++ Build tools and CMake
 sudo apt update
@@ -135,15 +135,10 @@ Enter Threads (e.g., 8) and Duration (e.g., 60 seconds).
 
 Generating Graphs
 
-After running multiple tests (e.g., with 1, 4, 8, 16 threads), the client will save results to load_test_results.csv in the build folder (or root depending on where you ran it).
+After running multiple tests (e.g., with 1, 4, 8, 16 threads), the client will save results to load_test_results.csv.
 
 Move the CSV to the results/ folder in the project root and run the plotter:
 
-# From project root
-python3 generate_plots.py
-
-
-This will generate load_test_results.png showing Throughput and Latency curves.
 
 Identifying Bottlenecks
 
