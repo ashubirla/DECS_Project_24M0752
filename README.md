@@ -7,14 +7,23 @@ This project implements a multi-threaded Key-Value store server backed by MySQL 
 Ensure your project directory looks like this:
 
 /project_root
+
 ├── CMakeLists.txt          # Build configuration
+
 ├── server.cpp              # Server source code (MySQL + Cache)
+
 ├── client.cpp              # Load Generator source code
+
 ├── analysis.sh             # Performance monitoring script (mpstat/iostat)
+
 ├── plot.py       # Python script to generate graphs
+
 ├── results/                # Folder for CSV results
+
 ├── report.pdf                # My Project Report
+
 ├── presentation.pdf            # My Project Presentation
+
 
 
 2. Prerequisites
