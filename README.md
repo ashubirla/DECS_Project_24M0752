@@ -2,7 +2,7 @@
 
 This project implements a multi-threaded Key-Value store server backed by MySQL and an in-memory FIFO cache. It includes a closed-loop load generator to stress test the system and scripts to analyze performance bottlenecks (CPU vs. Disk I/O).
 
-1. Directory Structure
+# 1. Directory Structure
 
 Ensure your project directory looks like this:
 
