@@ -13,6 +13,8 @@ Ensure your project directory looks like this:
 ├── analysis.sh             # Performance monitoring script (mpstat/iostat)
 ├── plot.py       # Python script to generate graphs
 ├── results/                # Folder for CSV results
+├── report.pdf                # My Project Report
+├── presentation.pdf            # My Project Presentation
 
 
 2. Prerequisites
